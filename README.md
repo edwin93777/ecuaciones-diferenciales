@@ -1,158 +1,203 @@
-# Modelos de Ecuaciones Diferenciales · Flask + SymPy · listo para Render
+# Modelos de Ecuaciones Diferenciales
 
-Proyecto académico para montar modelos de ecuaciones diferenciales por módulos, no por ejercicios aislados.
+Aplicación web académica desarrollada con **Flask**, **Python** y **SymPy** para resolver y explicar modelos básicos de ecuaciones diferenciales de primer orden. El sistema está organizado por módulos matemáticos reutilizables, genera pasos de solución en formato LaTeX y permite evaluar casos con datos completos o conservar expresiones simbólicas cuando faltan datos del enunciado.
 
-## Enfoque corregido
+## Propósito del sistema
 
-La aplicación mantiene cuatro módulos matemáticos principales:
+El objetivo principal es apoyar el estudio de ecuaciones diferenciales mediante una interfaz que no solo entrega un resultado numérico, sino que también muestra el modelo usado, la fórmula general, la inferencia de constantes, la evaluación simbólica y la justificación matemática del procedimiento.
 
-- **Crecimiento**
-- **Decaimiento**
-- **Enfriamiento por Ley de Newton**
-- **Mezclas**
+La aplicación está pensada para ejercicios de crecimiento, decaimiento, enfriamiento, mezclas y Carbono-14. Cada módulo recibe datos desde formularios dinámicos, procesa la información en el backend y devuelve una respuesta estructurada para mostrar fórmulas, pasos y resultados en pantalla.
 
-Las variantes se seleccionan desde una lista dinámica dentro de cada módulo. El objetivo no es guardar respuestas fijas de ejercicios, sino montar modelos reutilizables que puedan operar con datos completos o incompletos.
+## Tecnologías principales
 
-
-## Mejoras añadidas en esta versión
-
-Esta versión refuerza el enfoque simbólico y pedagógico del sistema:
-
-- SymPy queda marcado como prioridad de modelado en las respuestas del backend.
-- Cada respuesta matemática incorpora una derivación base antes de los pasos numéricos.
-- Cada módulo y variante tiene un botón `?` con explicación completa del modelo.
-- Cada input tiene un botón `?` con explicación del dato esperado.
-- Las ventanas informativas incluyen fórmula general, proceso de obtención, comprobación y ejemplo por defecto del sistema.
-- El módulo de documentación SymPy fue ampliado para explicar el flujo completo de construcción simbólica.
-- La interfaz se adaptó a celulares con menú lateral ocultable mediante botón de hamburguesa.
-- Se agregó `pytest.ini` para ejecutar pruebas directamente con `pytest -q`.
-
-## Constante k no obligatoria
-
-La constante `k` ya no es obligatoria. La aplicación sigue esta lógica:
-
-1. Si `k` se entrega directamente, se usa.
-2. Si `k` no se entrega pero puede inferirse con una medición conocida, se calcula.
-3. Si `k` no se entrega y no puede inferirse, el sistema responde simbólicamente con SymPy.
-
-Ejemplos:
-
-```text
-P(8)=500e^(8k)
-q(t)=10e^(-t/(RC))
-v∞=g/k
-```
-
-## Corrección de descarga de capacitor
-
-La descarga de capacitor ahora opera en tres escenarios:
-
-```text
-1. Con k directa:
-   q(t)=q0e^(-kt)
-
-2. Con R y C:
-   k=1/(RC)
-   q(t)=q0e^(-t/(RC))
-
-3. Sin k, R ni C:
-   q(t)=q0e^(-t/(RC))
-   t=RC ln(q0/qf)
-```
+| Tecnología | Uso dentro del sistema |
+|---|---|
+| Python | Lenguaje principal del backend. |
+| Flask | Servidor web, rutas HTTP y renderizado inicial de la interfaz. |
+| SymPy | Construcción simbólica de fórmulas, expresiones, derivadas, simplificaciones y salida LaTeX. |
+| MathJax | Renderizado visual de fórmulas LaTeX en el navegador. |
+| JavaScript | Manejo dinámico de módulos, formularios, peticiones y resultados. |
+| CSS | Diseño visual responsivo de la interfaz. |
+| Gunicorn | Servidor WSGI usado para producción en Render. |
 
 ## Módulos matemáticos
 
 ### Crecimiento
 
-- crecimiento poblacional proporcional;
-- interés compuesto continuo;
-- crecimiento con entrada constante;
-- caída con resistencia del aire.
+Incluye modelos donde una magnitud aumenta de acuerdo con una tasa proporcional o con una entrada externa controlada.
+
+- Crecimiento proporcional.
+- Interés continuo.
+- Crecimiento con entrada constante.
+- Caída con resistencia del aire.
 
 ### Decaimiento
 
-- decaimiento radiactivo;
-- absorción/eliminación de medicamento;
-- descarga de capacitor;
-- intensidad de luz.
+Resuelve situaciones donde una cantidad disminuye proporcionalmente a su valor actual.
 
-### Enfriamiento
+- Decaimiento radiactivo.
+- Absorción o eliminación de medicamento.
+- Descarga de capacitor.
+- Atenuación de intensidad de luz.
 
-- enfriamiento hacia ambiente;
-- calentamiento hacia ambiente.
+### Enfriamiento por Ley de Newton
+
+Modela la temperatura de un cuerpo que se acerca a la temperatura ambiente.
+
+- Enfriamiento hacia el ambiente.
+- Calentamiento hacia el ambiente.
+- Inferencia de la constante `k` desde una medición conocida.
+- Evaluación de temperatura en un tiempo dado.
+- Cálculo del tiempo necesario para alcanzar una temperatura objetivo.
 
 ### Mezclas
 
-- volumen constante;
-- volumen variable.
+Modela tanques con entrada y salida de líquido, usando balance de soluto.
 
-## Módulos documento
+- Mezcla con volumen constante.
+- Mezcla con volumen variable.
+- Concentración de entrada.
+- Concentración de salida fija cuando el enunciado la define.
+- Cantidad de soluto, concentración y valor límite.
 
-Se añadieron módulos tipo documento dentro de la interfaz:
+### Carbono-14
 
-- **Python**: documentación general del lenguaje y explicación de cómo se usó en el backend.
-- **SymPy**: explicación detallada del motor simbólico, uso de variables indeterminadas, LaTeX, EDO y propósito académico.
-- **Autoría y permiso**: desarrollador, autorización concedida al profesor Tito Amauryt y aviso de almacenamiento local.
+Módulo especializado para datación por vida media.
 
-## Uso de SymPy
+- Modelo diferencial `dM/dt = -kM`.
+- Vida media por defecto de `5730` años.
+- Cantidad restante en un tiempo determinado.
+- Porcentaje restante en un tiempo determinado.
+- Edad de una muestra desde porcentaje restante.
+- Edad de una muestra desde cantidad inicial y cantidad restante.
+- Función simbólica general `M(t)=M0e^(-kt)`.
 
-SymPy se utiliza para:
+## Documentación interna en la interfaz
 
-- construir expresiones simbólicas;
-- conservar variables indeterminadas como `k`, `C`, `R`, `t`, `P0`, `Ta` o `RC`;
-- generar salidas LaTeX;
-- evaluar funciones cuando sí hay datos completos;
-- evitar inventar constantes cuando el enunciado no las proporciona.
+El sistema incluye módulos de documentación visibles desde el menú principal.
 
-## Despliegue en Render
+### Python
 
-El proyecto está preparado para ejecutarse como una única aplicación Flask servida por Gunicorn. El frontend usa rutas relativas contra el mismo dominio publicado, por ejemplo `/resolver/crecimiento`, `/resolver/decaimiento`, `/resolver/enfriamiento` y `/resolver/mezclas`; por eso no depende de direcciones locales ni de puertos fijos del equipo del estudiante.
+Describe la organización del backend, las rutas Flask, los modelos, las validaciones y el formato de respuestas JSON.
 
-Configuración recomendada en Render:
+### SymPy
 
-```text
-Build command: pip install -r requirements.txt
-Start command: gunicorn run:app
-Runtime: Python 3.11.9
-```
+Explica el motor simbólico usado por el sistema. Incluye fragmentos internos de código para crecimiento, decaimiento, Newton, mezclas, derivaciones y Carbono-14. Los fragmentos resaltan funciones y operaciones de SymPy como:
 
-El puerto se toma automáticamente desde la variable de entorno `PORT`, que Render inyecta durante la ejecución.
+- `sp.Symbol` y `sp.symbols`.
+- `sp.Float`.
+- `sp.exp`.
+- `sp.log`.
+- `sp.diff`.
+- `sp.Eq`.
+- `sp.simplify`.
+- `sp.latex`.
+- `.subs`.
+- `sp.N`.
+- Operadores simbólicos como `*`, `/` y `**`.
 
-## Estructura
+## Arquitectura del proyecto
 
 ```text
 backend/
   app.py
   modelos/
+    carbono14.py
     crecimiento.py
     decaimiento.py
     enfriamiento.py
-    mezclas.py
     formulas_simbolicas.py
+    mezclas.py
   routes/
+    carbono14_routes.py
+    crecimiento_routes.py
+    decaimiento_routes.py
+    enfriamiento_routes.py
+    mezclas_routes.py
   utils/
     derivaciones.py
+    formato.py
+    respuesta.py
+    simbolico.py
+    validacion.py
 frontend/
-  templates/index.html
-  static/css/global.css
-  static/js/modelos.js
-  static/js/main.js
+  templates/
+    index.html
+  static/
+    css/
+      global.css
+    js/
+      main.js
+      modelos.js
 docs/
+  autorizacion_profesor.md
   documentacion_python.md
   documentacion_sympy.md
-  autorizacion_profesor.md
-tests/
-  test_modelos.py
+  objetivo_modelos.md
 run.py
+requirements.txt
+render.yaml
+Procfile
+.python-version
 ```
 
-## Autoría y autorización
+## Flujo de funcionamiento
+
+1. El usuario selecciona un módulo matemático en la interfaz.
+2. El navegador construye el formulario correspondiente a la variante elegida.
+3. JavaScript envía los datos al backend mediante rutas relativas como `/resolver/crecimiento`, `/resolver/mezclas` o `/resolver/carbono14`.
+4. Flask recibe la petición y la delega al modelo matemático correspondiente.
+5. El modelo valida datos, construye expresiones con SymPy, calcula constantes cuando es posible y genera pasos en LaTeX.
+6. El backend devuelve una respuesta JSON homogénea.
+7. El frontend muestra resultado, constantes, advertencias, fórmulas y procedimiento paso a paso.
+
+## Rutas principales
+
+| Ruta | Método | Función |
+|---|---:|---|
+| `/` | GET | Muestra la aplicación web. |
+| `/salud` | GET | Devuelve el estado básico del servicio. |
+| `/resolver/crecimiento` | POST | Resuelve modelos de crecimiento. |
+| `/resolver/decaimiento` | POST | Resuelve modelos de decaimiento. |
+| `/resolver/enfriamiento` | POST | Resuelve modelos de Ley de Newton. |
+| `/resolver/mezclas` | POST | Resuelve modelos de mezclas. |
+| `/resolver/carbono14` | POST | Resuelve el modelo de Carbono-14. |
+
+## Ejecución local
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+python run.py
+```
+
+En sistemas Linux o macOS:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python run.py
+```
+
+## Despliegue en Render
+
+El proyecto queda preparado para ejecutarse en Render como servicio web Python. La aplicación no depende de direcciones del equipo local; el frontend consume rutas relativas del mismo dominio donde se publique el backend.
+
+```text
+Build command: pip install -r requirements.txt
+Start command: gunicorn run:app
+```
+
+La versión de Python se define en `.python-version` y también en `render.yaml` mediante `PYTHON_VERSION`.
+
+## Autoría y autorización académica
 
 Desarrollado por **Edwin Bolaños**.
 
-Se autoriza al profesor **Tito Amauryt** para publicar, usar, adaptar, presentar, explicar, enseñar y distribuir este proyecto con fines académicos, pedagógicos e institucionales.
+El proyecto incluye autorización académica para que el profesor **Tito Amauryt** pueda usar, presentar, adaptar, modificar, explicar, enseñar, compartir y distribuir el sistema con fines pedagógicos e institucionales.
 
-## Cookies y almacenamiento local
+## Almacenamiento del navegador
 
-La aplicación no usa cookies de seguimiento. Solo utiliza `localStorage` para recordar el aviso legal aceptado por el usuario.
-
+La aplicación no utiliza cookies de seguimiento. Solo usa `localStorage` para recordar la aceptación del aviso legal mostrado en la interfaz.

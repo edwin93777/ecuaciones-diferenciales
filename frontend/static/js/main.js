@@ -315,6 +315,7 @@ function mostrarAyudaModeloActual() {
             <div class="formula">\\[${ayuda.comprobacionLatex}\\]</div>
             <h3>Ejemplo por defecto del sistema</h3>
             <p>${escaparHtml(ayuda.ejemplo)} Este caso permite observar cómo los datos concretos se sustituyen en la fórmula general, cómo se determina la constante del modelo cuando existe una medición adicional y cómo se obtiene el valor solicitado sin perder la relación con la ecuación diferencial original.</p>
+            ${ayuda.codigo ? bloqueCodigo("Fragmento Python/SymPy usado por esta variante", ayuda.codigo) : ""}
         </article>
     `;
     abrirModalAyuda();
@@ -393,7 +394,12 @@ function obtenerDescripcionDatoEsperado(campo) {
         "mezclas.volumen_variable.concentracion_salida": "Este campo se usa solamente si el enunciado fija una concentración de salida diferente. Si la salida depende de la mezcla interna, puede dejarse vacío.",
         "mezclas.volumen_variable.caudal_entrada": "Este dato es el volumen de líquido que entra por unidad de tiempo.",
         "mezclas.volumen_variable.caudal_salida": "Este dato es el volumen de líquido que sale por unidad de tiempo. Si es distinto al de entrada, el volumen del tanque cambia.",
-        "mezclas.volumen_variable.tiempo_objetivo": "Este valor es el tiempo en el que deseas calcular la cantidad de soluto o la concentración con volumen variable."
+        "mezclas.volumen_variable.tiempo_objetivo": "Este valor es el tiempo en el que deseas calcular la cantidad de soluto o la concentración con volumen variable.",
+        "carbono14.vida_media_5730.vida_media": "Este dato es la vida media del Carbono-14. Es opcional porque el parcial ya entrega el valor 5730 años; si lo dejas vacío, el sistema usa ese valor por defecto para calcular k=ln(2)/5730.",
+        "carbono14.vida_media_5730.cantidad_inicial": "Este valor representa M0, la cantidad inicial de Carbono-14 antes de que pase el tiempo. Es requerido cuando se calcula cantidad restante o edad por cantidad; en la función particular puede dejarse vacío para usar M0=1 como referencia relativa.",
+        "carbono14.vida_media_5730.tiempo_objetivo": "Este dato es requerido cuando se desea evaluar el modelo en un instante concreto. Debe escribirse en años, por ejemplo 5730 para comprobar que queda la mitad de la cantidad inicial.",
+        "carbono14.vida_media_5730.porcentaje_restante": "Este dato es requerido para calcular edad por porcentaje. Representa el porcentaje de Carbono-14 que aún queda en la muestra y debe estar entre 0 y 100.",
+        "carbono14.vida_media_5730.cantidad_restante": "Este valor es requerido para calcular edad por cantidad. Representa Mf, la cantidad de Carbono-14 medida actualmente, y debe ser menor o igual que M0 para respetar el decaimiento."
     };
     const comunes = {
         unidad: "Este campo no representa una cantidad matemática; solo indica cómo se nombrará la unidad del resultado, por ejemplo gramos, miligramos, litros, metros o pesos.",
@@ -409,9 +415,17 @@ function obtenerDescripcionDatoEsperado(campo) {
 function mostrarAyudaCampo(campo, variante) {
     const descripcionDato = obtenerDescripcionDatoEsperado(campo);
     const valorActual = campo.valor === "" || campo.valor === undefined || campo.valor === null ? "vacío" : campo.valor;
+    const esFormulaSimbolica = tipoActual === "formula_simbolica";
+    const esOpcional = campo.opcional || esFormulaSimbolica;
+    const estadoCampo = esOpcional
+        ? "Este campo es opcional para el cálculo seleccionado. Si lo dejas vacío, el backend no debe bloquear la operación: usará el valor por defecto definido por el modelo o simplemente omitirá ese dato cuando no sea matemáticamente necesario."
+        : "Este campo es requerido para el cálculo seleccionado. El backend lo necesita para poder construir una respuesta numérica correcta y evitar una solución incompleta o inventada.";
     const notaValor = valorActual === "vacío"
-        ? "En este formulario aparece vacío porque no siempre se entrega en el enunciado. Si el problema no menciona este dato, es mejor dejarlo vacío que inventarlo."
+        ? "En este formulario aparece vacío porque no siempre se entrega en el enunciado. Si el problema no menciona este dato y el campo está marcado como opcional, es mejor dejarlo vacío que inventarlo."
         : `En este formulario aparece cargado el valor ${escaparHtml(valorActual)} como ejemplo editable. Cámbialo cuando tu ejercicio tenga otro dato.`;
+    const instruccionFormato = campo.id === "unidad"
+        ? "Escribe una palabra corta para nombrar la unidad del resultado, por ejemplo <code>gramos</code>, <code>mg</code>, <code>%</code> o <code>unidades</code>. Este texto no participa en el cálculo matemático."
+        : "Escribe únicamente números en el campo. Cuando necesites decimales usa punto, por ejemplo <code>9.8</code>, <code>0.06</code> o <code>0.5</code>. Conserva las mismas unidades del problema para que el resultado tenga sentido.";
     modalAyudaCuerpo.innerHTML = `
         <article class="modal-narrativa modal-dato">
             <header class="modal-portada mini">
@@ -419,8 +433,9 @@ function mostrarAyudaCampo(campo, variante) {
                 <h2 id="modal-ayuda-titulo">${escaparHtml(campo.label)}</h2>
             </header>
             <p>${escaparHtml(descripcionDato)}</p>
+            <p><strong>${esOpcional ? "Estado: opcional." : "Estado: requerido."}</strong> ${escaparHtml(estadoCampo)}</p>
             <p>${notaValor}</p>
-            <p>Escribe únicamente números en el campo. Cuando necesites decimales usa punto, por ejemplo <code>9.8</code>, <code>0.06</code> o <code>0.5</code>. Conserva las mismas unidades del problema para que el resultado tenga sentido.</p>
+            <p>${instruccionFormato}</p>
         </article>
     `;
     abrirModalAyuda();

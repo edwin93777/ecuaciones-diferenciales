@@ -8,6 +8,7 @@ from backend.routes.crecimiento_routes import crecimiento_bp
 from backend.routes.decaimiento_routes import decaimiento_bp
 from backend.routes.enfriamiento_routes import enfriamiento_bp
 from backend.routes.mezclas_routes import mezclas_bp
+from backend.routes.carbono14_routes import carbono14_bp
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = BASE_DIR / "frontend" / "templates"
@@ -30,7 +31,7 @@ def crear_app() -> Flask:
         return {
             "estado": "ok",
             "modo": "produccion_render",
-            "modulos": ["crecimiento", "decaimiento", "enfriamiento", "mezclas", "python", "sympy", "autorizacion"],
+            "modulos": ["crecimiento", "decaimiento", "enfriamiento", "mezclas", "carbono14", "python", "sympy", "autorizacion"],
             "objetivo": "montar modelos y variantes, incluir fórmulas simbólicas con datos incompletos y documentación técnica",
         }, 200
 
@@ -38,6 +39,7 @@ def crear_app() -> Flask:
     app.register_blueprint(decaimiento_bp)
     app.register_blueprint(enfriamiento_bp)
     app.register_blueprint(mezclas_bp)
+    app.register_blueprint(carbono14_bp)
 
     return app
 

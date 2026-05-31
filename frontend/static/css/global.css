@@ -1177,3 +1177,56 @@ body {
         padding-right: 0;
     }
 }
+
+/* ===================== Mejora v5: código SymPy resaltado + viñetas informativas ===================== */
+.codigo-sympy-funcion {
+    color: #7dd3fc;
+    font-weight: 800;
+}
+
+.codigo-sympy-variable {
+    color: #facc15;
+    font-weight: 750;
+}
+
+.vineta-codigo-sympy {
+    margin-top: 12px;
+    padding: 14px 16px;
+    border: 1px solid rgba(125, 211, 252, 0.28);
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(250, 204, 21, 0.08));
+    color: #dbeafe;
+}
+
+.vineta-codigo-sympy strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #e0f2fe;
+}
+
+.vineta-codigo-sympy p {
+    margin: 0 0 10px;
+    color: #bfdbfe;
+    line-height: 1.55;
+}
+
+.vineta-codigo-sympy ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.vineta-codigo-sympy li {
+    margin: 6px 0;
+    line-height: 1.55;
+}
+
+.vineta-codigo-sympy code {
+    color: #fef08a;
+    background: rgba(15, 23, 42, 0.55);
+    padding: 2px 6px;
+    border-radius: 8px;
+}
+
+.modal-narrativa .bloque-codigo-documentado {
+    margin-top: 18px;
+}

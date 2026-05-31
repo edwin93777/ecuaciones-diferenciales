@@ -2,14 +2,81 @@
 
 Estas secciones se agregan antes de los pasos numéricos de cada modelo para que
 la aplicación muestre de dónde sale la fórmula general usada por cada variante.
-Se mantienen como texto/LaTeX estático porque la lógica dinámica y segura de
-cálculo sigue viviendo en los módulos de modelos y en ``utils.simbolico``.
+El archivo combina plantillas pedagógicas en LaTeX con pequeñas construcciones
+simbólicas de SymPy usadas para documentar cómo se verifican derivadas,
+igualdades y simplificaciones algebraicas.
 """
 from __future__ import annotations
 
 from copy import deepcopy
 
+import sympy as sp
+
 Paso = dict[str, str]
+
+
+def construir_comprobacion_newton_sympy() -> list[Paso]:
+    """Construye una comprobación simbólica de la Ley de Newton.
+
+    SymPy representa T(t), deriva la función respecto al tiempo y simplifica
+    la diferencia entre la derivada obtenida y el lado derecho del modelo.
+    Si la simplificación produce cero, la fórmula satisface la ecuación
+    diferencial T'=-k(T-Ta).
+    """
+    tiempo = sp.Symbol("t", real=True)
+    constante_k = sp.Symbol("k", positive=True)
+    temperatura_inicial, temperatura_ambiente = sp.symbols("T_0 T_a", real=True)
+    temperatura = temperatura_ambiente + (temperatura_inicial - temperatura_ambiente) * sp.exp(-constante_k * tiempo)
+    derivada = sp.diff(temperatura, tiempo)
+    residuo = sp.simplify(derivada + constante_k * (temperatura - temperatura_ambiente))
+
+    return [
+        {
+            "titulo": "Comprobación simbólica con SymPy",
+            "descripcion": "SymPy deriva la función de Newton y verifica que el residuo de la ecuación diferencial sea cero.",
+            "latex": rf"\begin{{gathered}}T(t)={sp.latex(temperatura)}\\[4px]T'(t)={sp.latex(derivada)}\\[4px]\operatorname{{simplificar}}(T'(t)+k(T-T_a))={sp.latex(residuo)}\end{{gathered}}",
+        }
+    ]
+
+
+def construir_comprobacion_mezcla_constante_sympy() -> list[Paso]:
+    """Construye una verificación simbólica para mezcla con volumen constante."""
+    tiempo = sp.Symbol("t", real=True)
+    caudal, volumen = sp.symbols("r V", positive=True)
+    concentracion_entrada, sal_inicial = sp.symbols("c_e A_0", real=True)
+    cantidad_sal = volumen * concentracion_entrada + (sal_inicial - volumen * concentracion_entrada) * sp.exp(-(caudal / volumen) * tiempo)
+    derivada = sp.diff(cantidad_sal, tiempo)
+    balance = caudal * concentracion_entrada - (caudal / volumen) * cantidad_sal
+    residuo = sp.simplify(derivada - balance)
+
+    return [
+        {
+            "titulo": "Verificación simbólica de mezcla constante",
+            "descripcion": "SymPy deriva A(t), arma el balance entrada menos salida y simplifica la diferencia para comprobar la solución.",
+            "latex": rf"\begin{{gathered}}A(t)={sp.latex(cantidad_sal)}\\[4px]A'(t)={sp.latex(derivada)}\\[4px]\operatorname{{simplificar}}(A'(t)-(rc_e-\frac{{r}}{{V}}A(t)))={sp.latex(residuo)}\end{{gathered}}",
+        }
+    ]
+
+
+def construir_comprobacion_mezcla_variable_sympy() -> list[Paso]:
+    """Construye el planteamiento simbólico de mezcla con volumen variable."""
+    tiempo = sp.Symbol("t", real=True)
+    volumen_inicial, caudal_entrada, caudal_salida = sp.symbols("V_0 r_e r_s", positive=True)
+    concentracion_entrada = sp.Symbol("c_e", real=True)
+    volumen_tiempo = volumen_inicial + (caudal_entrada - caudal_salida) * tiempo
+    ecuacion = sp.Eq(
+        sp.Symbol("A", real=True),
+        concentracion_entrada * volumen_tiempo + sp.Symbol("C", real=True) * volumen_tiempo ** (-caudal_salida / (caudal_entrada - caudal_salida)),
+    )
+
+    return [
+        {
+            "titulo": "Planteamiento simbólico de volumen variable",
+            "descripcion": "SymPy conserva V(t) como expresión algebraica, lo que permite mostrar el volumen del tanque sin depender de una ruta local ni de valores quemados.",
+            "latex": rf"\begin{{gathered}}V(t)={sp.latex(volumen_tiempo)}\\[4px]{sp.latex(ecuacion)}\end{{gathered}}",
+        }
+    ]
+
 
 
 DERIVACIONES: dict[tuple[str, str], list[Paso]] = {
@@ -209,6 +276,34 @@ DERIVACIONES: dict[tuple[str, str], list[Paso]] = {
             "latex": r"I_1=I_0e^{-kx_1}\Rightarrow k=\frac{1}{x_1}\ln\left(\frac{I_0}{I_1}\right)",
         },
     ],
+
+    ("carbono14", "vida_media_5730"): [
+        {
+            "titulo": "Modelo diferencial del Carbono-14",
+            "descripcion": "El enunciado indica que la rapidez de desintegración es proporcional a la cantidad presente; por eso el modelo es un decaimiento exponencial.",
+            "latex": r"\frac{dM}{dt}=-kM,\quad k>0",
+        },
+        {
+            "titulo": "Solución general por separación",
+            "descripcion": "Al separar variables e integrar aparece una función exponencial decreciente.",
+            "latex": r"\frac{dM}{M}=-k\,dt\Rightarrow \ln|M|=-kt+C_1\Rightarrow M(t)=Ce^{-kt}",
+        },
+        {
+            "titulo": "Condición inicial",
+            "descripcion": "La cantidad inicial M0 fija la constante multiplicativa de la solución.",
+            "latex": r"M(0)=M_0\Rightarrow C=M_0\Rightarrow M(t)=M_0e^{-kt}",
+        },
+        {
+            "titulo": "Vida media de 5730 años",
+            "descripcion": "Después de 5730 años queda la mitad de la cantidad inicial; de ahí sale la constante k del Carbono-14.",
+            "latex": r"M(5730)=\frac{M_0}{2}\Rightarrow \frac12=e^{-5730k}\Rightarrow k=\frac{\ln 2}{5730}",
+        },
+        {
+            "titulo": "Función final de datación",
+            "descripcion": "La forma equivalente con potencia de un medio facilita explicar cuántas vidas medias han transcurrido.",
+            "latex": r"M(t)=M_0e^{-(\ln 2/5730)t}=M_0\left(\frac12\right)^{t/5730}",
+        },
+    ],
     ("enfriamiento", "newton_constante"): [
         {
             "titulo": "Ley de enfriamiento de Newton",
@@ -308,6 +403,15 @@ DERIVACIONES: dict[tuple[str, str], list[Paso]] = {
         },
     ],
 }
+
+
+# Las comprobaciones siguientes se generan con SymPy y se agregan a las
+# derivaciones estáticas para que los módulos de Newton y mezclas no dependan
+# únicamente de texto LaTeX escrito manualmente.
+DERIVACIONES[("enfriamiento", "newton_constante")] += construir_comprobacion_newton_sympy()
+DERIVACIONES[("enfriamiento", "calentamiento_newton")] += construir_comprobacion_newton_sympy()
+DERIVACIONES[("mezclas", "volumen_constante")] += construir_comprobacion_mezcla_constante_sympy()
+DERIVACIONES[("mezclas", "volumen_variable")] += construir_comprobacion_mezcla_variable_sympy()
 
 
 _ALIASES: dict[tuple[str, str], tuple[str, str]] = {

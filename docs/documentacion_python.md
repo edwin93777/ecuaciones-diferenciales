@@ -1,13 +1,31 @@
-# Python en la aplicación
+# Documentación Python actualizada
 
-Python organiza el backend completo del sistema. Flask expone rutas, los modelos resuelven cada familia matemática, las utilidades validan entradas y SymPy construye las expresiones simbólicas. Esta separación mantiene el proyecto más claro, escalable y fácil de explicar en una exposición académica.
+El proyecto usa Python como capa de backend para recibir datos del navegador, validar entradas, seleccionar el modelo matemático y entregar respuestas JSON con pasos en LaTeX.
 
-La estructura principal es:
+## Versión objetivo
 
-- `backend/app.py`: crea la aplicación Flask y registra módulos.
-- `backend/routes`: recibe peticiones HTTP y llama a los modelos.
-- `backend/modelos`: contiene la lógica matemática.
-- `backend/utils`: contiene validación, formato, respuesta y motor simbólico.
-- `tests`: verifica que los modelos respondan correctamente.
+- Python objetivo para Render: `python-3.14.3`.
+- Archivo actualizado: `runtime.txt`.
+- La estructura del código conserva compatibilidad con `from __future__ import annotations`, type hints modernos y separación por módulos.
 
-Las respuestas del backend usan un formato uniforme con resultado, unidad, constantes, pasos en LaTeX, advertencias y metadatos. Esto permite que el frontend sea genérico y que cualquier modelo pueda renderizarse sin duplicar lógica.
+## Módulos principales
+
+- `backend/app.py`: inicializa Flask y registra los blueprints.
+- `backend/routes/*_routes.py`: expone rutas HTTP pequeñas y auditables.
+- `backend/modelos/*`: resuelve cada familia matemática.
+- `backend/modelos/carbono14.py`: nuevo módulo especializado para el modelo de Carbono-14 del parcial.
+- `backend/utils/simbolico.py`: concentra funciones compartidas con SymPy.
+- `backend/utils/formato.py`: estandariza pasos, constantes, resultado y LaTeX.
+
+## Flujo de ejecución
+
+1. El frontend envía `variante`, `tipo_calculo` y campos del formulario.
+2. La ruta Flask recibe JSON y delega al modelo correspondiente.
+3. El modelo valida datos y construye expresiones con SymPy.
+4. El backend devuelve resultado, constantes, pasos, advertencias y metadatos.
+5. MathJax renderiza las fórmulas LaTeX en la interfaz.
+
+
+## Ajuste de campos opcionales y requeridos en Carbono-14
+
+El formulario del módulo Carbono-14 fue revisado para que los campos no aparezcan como opcionales cuando el cálculo realmente los necesita. La vida media se conserva como opcional porque el modelo puede usar 5730 años por defecto; la unidad también es opcional porque solo etiqueta el resultado. En cambio, `cantidad_inicial`, `tiempo_objetivo`, `porcentaje_restante` y `cantidad_restante` son requeridos únicamente en los tipos de cálculo donde participan directamente en la operación matemática.

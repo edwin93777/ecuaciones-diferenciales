@@ -75,6 +75,23 @@ def expresion_mezcla_volumen_variable(
     ) * (decimal(volumen_inicial) / volumen) ** decimal(exponente)
 
 
+def constante_decaimiento_por_vida_media(vida_media: float | int) -> sp.Expr:
+    """Construye k = ln(2) / vida_media con SymPy."""
+    return sp.log(2) / decimal(vida_media)
+
+
+def expresion_carbono14(cantidad_inicial: float, vida_media: float, variable: sp.Symbol) -> sp.Expr:
+    """Construye M(t)=M0*exp(-(ln(2)/vida_media)t) para Carbono-14."""
+    constante_k = constante_decaimiento_por_vida_media(vida_media)
+    return decimal(cantidad_inicial) * sp.exp(-constante_k * variable)
+
+
+def expresion_porcentaje_carbono14(vida_media: float, variable: sp.Symbol) -> sp.Expr:
+    """Construye P(t)=100*exp(-(ln(2)/vida_media)t)."""
+    constante_k = constante_decaimiento_por_vida_media(vida_media)
+    return decimal(100) * sp.exp(-constante_k * variable)
+
+
 def igualdad_funcion(nombre: str, variable: sp.Symbol, expresion: sp.Expr) -> str:
     """Devuelve una igualdad tipo f(t)=... en LaTeX."""
     return rf"{nombre}({sp.latex(variable)})={sp.latex(expresion)}"
